@@ -1,0 +1,58 @@
+-- Query per estrarre tutti i clienti con nome Mario
+SELECT * FROM public.clienti WHERE nome = 'Mario';
+
+-- Query per estrarre nome e cognome dei clienti nati nel 1982
+SELECT nome, cognome FROM public.clienti WHERE anno_di_nascita = 1982;
+
+-- Query per estrarre il numero delle fatture con IVA al 20%
+SELECT COUNT(*) AS numero_fatture FROM public.fatture WHERE iva = 20;
+
+-- Query per estrarre i prodotti attivati nel 2017 e in produzione o commercio
+SELECT * FROM public.prodotti 
+WHERE EXTRACT(YEAR FROM data_attivazione) = 2017 
+AND (in_produzione = TRUE OR in_commercio = TRUE);
+
+-- Query per estrarre le fatture con importo inferiore a 1000 e dati clienti
+SELECT f.*, c.nome, c.cognome 
+FROM public.fatture f 
+JOIN public.clienti c ON f.id_cliente = c.numero_cliente 
+WHERE f.importo < 1000;
+
+-- Query per riportare l'elenco delle fatture con nome del fornitore
+SELECT f.numero_fattura, f.importo, f.iva, f.data_fattura, fo.denominazione AS nome_fornitore 
+FROM public.fatture f 
+JOIN public.fornitori fo ON f.numero_fornitore = fo.numero_fornitore;
+
+-- Query per estrarre il numero di fatture per anno con IVA al 20%
+SELECT EXTRACT(YEAR FROM data_fattura) AS anno, COUNT(*) AS numero_fatture 
+FROM public.fatture 
+WHERE iva = 20 
+GROUP BY anno 
+ORDER BY anno;
+
+-- Query per riportare il numero di fatture e somma importi per anno
+SELECT EXTRACT(YEAR FROM data_fattura) AS anno, COUNT(*) AS numero_fatture, SUM(importo) AS somma_importi 
+FROM public.fatture 
+GROUP BY anno 
+ORDER BY anno;
+
+-- Query per estrarre gli anni con più di 2 fatture di tipologia 'A'
+SELECT EXTRACT(YEAR FROM data_fattura) AS anno, COUNT(*) AS numero_fatture 
+FROM public.fatture 
+WHERE tipologia = 'A' 
+GROUP BY anno 
+HAVING COUNT(*) > 2 
+ORDER BY anno;
+
+-- Query per estrarre il totale degli importi delle fatture divisi per residenza dei clienti
+SELECT c.regione_residenza, SUM(f.importo) AS totale_importi 
+FROM public.fatture f 
+JOIN public.clienti c ON f.id_cliente = c.numero_cliente 
+GROUP BY c.regione_residenza 
+ORDER BY c.regione_residenza;
+
+-- Query per estrarre il numero di clienti nati nel 1980 con fatture > 50€
+SELECT COUNT(DISTINCT c.numero_cliente) AS numero_clienti 
+FROM public.clienti c 
+JOIN public.fatture f ON c.numero_cliente = f.id_cliente 
+WHERE c.anno_di_nascita = 1980 AND f.importo > 50;
